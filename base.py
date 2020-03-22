@@ -184,7 +184,7 @@ shild.add_shape(radiators(), color(0.8,0.8,.8))
 
 
 #==============================================================
-#=====================Концевик==========================
+#=================Концевик==============================
 def kontsevic():
     def telo():
         m=box((20,6.3,10),center=True)\
@@ -208,26 +208,6 @@ def kontsevic():
     kontsevic.add_shape(richag(0), color(0.75,0.75,0.75))
     kontsevic.add_shape(kontakti(), color(0.75,0.75,0.75))
     return kontsevic
-#=====================Червячная передача====================
-step= 8
-teeth = 6
-l_gear= 7
-n_s= 2
-n= 24
-#====================Подшипник==========================
-pod_d1= 8
-pod_d2= 5
-pod_h = 2.5
-
-#===============================================
-
-#=======================база======================
-pi = math.pi
-rad = 150
-b_cyl_r = 50
-d_trub= 15.2
-d_trub_vn= 12
-#============================================
 #====================Двигатели============================
 if nema == 17 :
     xz_dvig = 42.5
@@ -249,15 +229,34 @@ if nema == 23:
     dlin_rotor= 20
     d_vint= 5
 
-rich_x=0.5*(xz_dvig+10) #сдвиг рычага по X
-#===================================================
-#====================� уки==================
-Rf= 150 # длина плеча рычага
-Re= 400 # длина предплечья рычага
+rich_x=0.5*(xz_dvig+10) #Сдвиг рычага по Х
+#=====================Червячная передача====================
+step= 8
+teeth = 6
+l_gear= 7
+n_s= 2
+n= 24
+#==================Подшипник==========================
+pod_d1= 8
+pod_d2= 5
+pod_h = 2.5
+#=======================База======================
+pi = math.pi
+rad = 150
+b_cyl_r = 50
+d_trub= 15.2
+d_trub_vn= 12
+#====================Руки==================
+Rf= 120 # Длина плеча рычага
+Re= 250 # Длина предплечья рычага
 
-r_trubki = 3.9
+r_trubki = 4
+r_trubki_vn = 3.9
 #===========================================
-
+#===============Каретка====================
+E = 70
+l_karetki = 50
+#==========================================
 def dvig(): # Модель двигателя
     if nema==17 :
         u = cube((54,22,54), center=True).forw(0.5*y_dvig-1) \
@@ -278,17 +277,13 @@ def dvig(): # Модель двигателя
     dvig = cube((xz_dvig,y_dvig,xz_dvig), center=True) ^ u
     dvig = dvig + rotor
     return dvig.rotateX(pi/2).translate(0,rich_x,27.5+0.5*y_dvig)
-def tri_dvig(): # Функция расположения трех двигателей
-    tri_dvig = null()
+def tri_dvig(): # Функция располажения трех двигателей
+    tri_dvig = nullshape()
     for i in range(-1,2,1):
         a = 2*pi*i/3
         tri_dvig = tri_dvig + dvig().moveY(-rad).rotateZ(a)
     return tri_dvig
-def null(): # Функция пустого объекта
-    m= box(1) - box(1)
-    return m
-
-def hvost(f): # Ласточкин хвост 
+def hvost(f): # Ласточкин хвост
     if f == 1 :
         dh = 0.3
     else:
@@ -300,41 +295,48 @@ def hvost(f): # Ласточкин хвост
     o=polygon(pnts=pnts,wire=False)
     m=linear_extrude(proto=o,vec=(0,0,20),center=True).moveZ(25)
     return m
-def basa(): # Центральная деталь базы
+def pos_gaiki(): # функция выреза под гайку
+    m = ngon(r=4.15,n=6,wire=False)
+    n = linear_extrude(proto=m, vec=(0,0,5), center=True)
+    return n
+def basa(): # Центральная деталь
     basa = cylinder(r=b_cyl_r,h=30,center=True)\
                 - cylinder(r=25,h=30,center=True)
     basa=basa.moveZ(20)
-    def pos_gaiki():
-        m = ngon(r=3.55,n=6,wire=False)
-        n = linear_extrude(proto=m, vec=(0,0,5), center=True)
-        return n
     for i in range(-1,2,1):
         a = 2*pi*i/3
         basa = basa-hvost(1).moveY(-b_cyl_r+10).rotateZ(a)\
-                    - cylinder(2,40,True).moveY(-b_cyl_r+10).rotateZ(a)\
-                    - cylinder(2,80,True).moveY( b_cyl_r-10).rotateZ(a)\
-                    - cylinder(3.45,5,True).translate(0,b_cyl_r-10,32.5).rotateZ(a)\
-                    - box((d_trub+0.4,20,d_trub+0.4),center=True).translate(0,b_cyl_r-10,20)\
-                    .rotateZ(a)\
-                    - pos_gaiki().translate(0,b_cyl_r-10,7.5).rotateZ(a)\
-                    - pos_gaiki().translate(0,-b_cyl_r+10,7.5).rotateZ(a)\
-                    - cylinder(d_trub*0.4,40,True).rotateX(deg(90)).translate(0,b_cyl_r-20,20)\
+                - cylinder(2,40,True).moveY(-b_cyl_r+10).rotateZ(a)\
+                - cylinder(2,80,True).moveY( b_cyl_r-10).rotateZ(a)\
+                - pos_gaiki().translate(0,b_cyl_r-10,32.5).rotateZ(a)\
+                - box((d_trub+0.4,20,d_trub+0.4),center=True).translate(0,b_cyl_r-10,20)\
+                .rotateZ(a)\
+                - cylinder(3.45,5,True).translate(0,b_cyl_r-10,7.5).rotateZ(a)\
+                - cylinder(3.45,5,True).translate(0,-b_cyl_r+10,7.5).rotateZ(a)\
+                - cylinder(d_trub*0.4,40,True).rotateX(deg(90)).translate(0,b_cyl_r-20,20)\
                     .rotateZ(a)
-#=================Центральное крепление==================
-    basa = basa + cube((5,50,5),center=True).translate(10,0,7.5)\
-                +cube((5,50,5),center=True).translate(-10,0,7.5)
-    return basa
-def skelet(): # Трубы квадратного профиля
+#=================Крепление под камеру==================
+    cam =  sphere(30).up(20)\
+            ^ cylinder(r=30,h=15,yaw=deg(120),center=True)\
+            .rotateZ(deg(30)).up(37.5)
+    cam = cam + cylinder(8,10,True).translate(0,-5,35)\
+            + box((16,11.5,10),center=True).translate(0,0,35)\
+            - cylinder(1,10,True).translate(0,-5.5,35)\
+            - box ((54,19,3.5),center=True)\
+            .translate(14,0,41).rotateZ(deg(90))\
+            - box((8.75,8.75,6.5),center=True).up(45)
+    basa = basa + cam
+    return basa.rotateX(deg(180)).rotateZ(deg(60)).up(50)
+def skelet(): # Каркас из труб
     def truba(a,h):
         m = box((a,h,a),center=True) - box((a-2,h,a-2),center=True)
         return m
-    m = null()
+    m = nullshape()
     for i in range(-1,2,1):
         a = 2*pi*i/3
         m = m + truba(d_trub,2*rad-b_cyl_r-10).moveY(rad+0.5*b_cyl_r-25)\
-                    .moveZ(20).rotateZ(a)
+                    .moveZ(30).rotateZ(a)
     return m
-
 def ploshadka(): # Крепление платы ардуино
     m = sphere(20) ^ box((50,d_trub,50),center=True).moveZ(-10)\
                 - box(d_trub+0.5,center=True)
@@ -348,15 +350,14 @@ def ploshadka(): # Крепление платы ардуино
             - cylinder(1,30).translate( x05-7.63, y05-2.53 , 0)\
             - cylinder(1,30).translate( x05-35.56,y05-2.53 , 0)
     return m.translate(0,rad,20)
-
-def krepej(): # Лепесток с двигателем и червячной передачей 
+def krepej(): # Лепесток с двигателем и червячным редуктором
     if nema==17:
         v = box((xz_dvig,xz_dvig,10),center=True)\
                 ^ box((54,54,10),center=True).rotateZ(pi/4)
     else:
         v = box((xz_dvig,xz_dvig,10),center=True)
-    o=null()
-#=================отверстия под винты и двигатель===============
+    o=nullshape()
+#=================Отверстия под винты и двигатель===============
     for i in range(4):
         o = o + cylinder(r=1.5,h=15,center=True)\
             .translate(0.5*otverstia,0.5*otverstia,0)\
@@ -364,10 +365,10 @@ def krepej(): # Лепесток с двигателем и червячной �
             + cylinder(r=2.7,h=4,center=True)\
             .translate(0.5*otverstia,0.5*otverstia,5.5)\
             .rotateZ(i*pi/2)
-    pnts =     [[ 11  , 0 ,  0  ],
+    pnts =     [[ 11 , 0 ,  0  ],
                 [ 9  , 0 ,  9  ],
                 [-9  , 0 ,  9  ],
-                [-11  , 0 ,  0  ]]
+                [-11 , 0 ,  0  ]]
     l = polygon(pnts=pnts,wire=False)
     n = linear_extrude(proto=l,vec=(0,40,0),center=True)
 
@@ -376,7 +377,7 @@ def krepej(): # Лепесток с двигателем и червячной �
             - cone(11,9,9,True).up(4.5)\
             - v.down(5)\
             - o - n.moveY(20)
-#================� ама для удержания оси рычага ==================
+#================Рама для удержания оси рычага ==================
     s = sphere(r=0.5*xz_dvig+24.5)\
             ^ box((150,28,50),center=True).translate(0.5*xz_dvig+12.5,0,17.5)\
             - sphere(r=0.5*xz_dvig+10).moveZ(5)\
@@ -405,8 +406,8 @@ def krepej(): # Лепесток с двигателем и червячной �
             .translate(-0.5*(rad-rich_x)+10,-box_h,0)\
             + hvost(0).rotateZ(pi/2).translate(hvostx,0,-22.5)\
             - cylinder(2,40,True).moveX(hvostx)\
-            - cylinder(3.45,5,True).translate(hvostx,0,-5)
-#===============Крепление для концевика верх=======
+            - pos_gaiki().translate(hvostx,0,10)
+#===============Крепление для концевика вверх=======
     krep = krep - hvost(1).rotateZ(deg(90)).scaleX(0.25).scaleY(0.25)\
                 .translate(rich_x+9,0,-30)\
                 - box((10,6,30),center=True).translate(rich_x+15,0,-10)\
@@ -445,12 +446,11 @@ def krepej(): # Лепесток с двигателем и червячной �
             .translate(rich_x,27.5,12).rotateX(pi/2)
 
 
-#===============Отверстия для проводов=====================
+#===============Отверстия для проводов =====================
     krep = krep - cylinder(4,30,True).rotateY(deg(-45)).translate(-40,0,0)
 
     return krep.rotateZ (-pi/2).rotateY(pi).translate(0,rich_x,27.5)
-
-def krep_konch(): # Крепеж для концевика
+def krep_konch(): # крепеж для концевика
     m = box((5.9,6,8),center=True)\
             + hvost(1).scaleX(0.25).scaleY(0.25).scaleZ(8/20)\
             .translate(0,5.5,-10)\
@@ -464,7 +464,7 @@ def krep_konch(): # Крепеж для концевика
         + cylinder(1.3,30,True).rotateY(deg(90)).translate(0,-10+3.86+1.3,-5+2.8)
     m = m - d.rotateX(deg(165)).translate(0,-31.3,-2.5)
     return m.translate(0,-rich_x+12.5,27)
-def krep_konch_niz():
+def krep_konch_niz(): # крепеж для нижнего концевика
     m = cylinder(7.5,27,True).translate(0,-2,-8)\
             ^ box((12,12,27),center=True).translate(0,-2,-8)\
             - box((6.25,20,21),center=True).down(7.25)\
@@ -475,8 +475,8 @@ def krep_konch_niz():
             + hvost(1).scaleX(0.24).scaleY(0.24).scaleZ(8/20)\
             .rotateX(deg(90)).translate(0,10,17.5)
     return m
-def gear(teeth,step): # Функция шестерни
-    g=null()
+def gear(teeth,step): # 2д шестерня
+    g=nullshape()
     angle = pi/teeth
     rad_opis = (step/2) / math.sin(angle/2)
     rad_vpis = (step/2) / math.tan(angle/2)
@@ -503,8 +503,7 @@ def gear(teeth,step): # Функция шестерни
         e.append(c[i])
         e.append(d[i])
     return sew(e).rotateX(0.5*pi)
-
-def gear3d(teta): # Основание рычаг а с шестерней 
+def gear3d(): # Шестерня
     angle = pi/teeth
     rad_opis = (step/2) / math.sin(angle/2)
     rad_vpis = (step/2) / math.tan(angle/2)
@@ -516,25 +515,13 @@ def gear3d(teta): # Основание рычаг а с шестерней
     for i in range (teeth):
         g = g - cylinder(0.55*step,step,True).rotateX(deg(90))\
               .moveX(rad_opis-1.5).rotateY((2*i+1)*angle + pi/4)
-    g = g + box((d_trub_vn-0.25,d_trub_vn-0.25,30),center=True)\
-            .up(20).rotateY(deg(90+teta))
+    g = g.rotateY(deg(15)) + box((d_trub_vn-0.25,d_trub_vn-0.25,30),center=True)\
+            .up(20).rotateY(deg(90))
     g= g ^ box((100,step-1.5,100),center=True)
 
     g = g - cylinder(0.5*pod_d1,step-1.5,True).rotateX(deg(90))
-#    g=[]
-#    g.append(gear(teeth,step).translate(0,0.5*l_gear,0).rotateY(deg(3)).scale(0.82))
-#    g.append(gear(teeth,step).translate(0,0.5,0).scale(0.98))
-#    g.append(gear(teeth,step).translate(0,-0.5,0).scale(0.98))
-#    g.append(gear(teeth,step).translate(0,-0.5*l_gear,0).rotateY(deg(-3)).scale(0.82))
-
-#    g=loft(g).rotateY(deg(teta))
-#    g=g - cylinder(r=0.5*pod_d1,h=l_gear,center=True).rotateX(pi/2)
-#    k = cone(r1=3,r2=4,h=10).up(10).rotateY(deg(90 + teta))\
-#        +cylinder(r=r_trubki,h=30).up(20).rotateY(deg(90 + teta))
-
     return g.rotateZ(deg(-90))
-
-def worm (teta): # Червяк 
+def worm (): # Червь
     angle = pi/teeth
     rad_opis =(step/2) / math.tan(angle/2)
     a = (n_s*angle*0.5)/n
@@ -572,27 +559,61 @@ def worm (teta): # Червяк
           - cylinder(11.2/2,11,True).down(0.5)\
           - cylinder(1.5,12,True).rotateY(deg(90)).translate(-5,0,-5.5+2.7)\
           - o
-    w = w.rotateZ(deg(3*teta + 90))
+    w = w.rotateZ(deg( 90))
     return w.rotateY(pi)#.translate(0,rich_x,19.5)
-
-def plecho(teta): # Плечо
+def plecho(): # Плечо
 #    m = cylinder(r=4,h=Rf - 40).up(20).rotateX(deg(90+teta))
 
-    m = box((d_trub,d_trub,Rf),center=True)\
+    m = box((d_trub,d_trub,Rf-30),center=True)\
             - box((d_trub_vn,d_trub_vn,Rf),center=True)
-    m = m.moveZ(Rf/2+20).rotateX(deg(90+teta))
+    m = m.moveZ((Rf-30)/2+20).rotateX(deg(90))
+    return m
+def plecho_krep():
+    m =  cylinder(0.5*d_trub+6,d_trub,center=True)\
+            .up(32.5).rotateX(deg(90))\
+            ^ box (d_trub+6,center=True).up(32.5).rotateX(deg(90))
+    m =  m  + cylinder(6,28,True).rotateY(deg(90))\
+            + box((28,12,40),center=True).up(20).rotateX(deg(90))\
+            - cylinder(2.5,28,True).rotateY(deg(90))\
+            - cylinder(21,20.5,True).rotateY(deg(90))\
+            - box((d_trub+0.2,d_trub+0.2,d_trub+10),center=True)\
+            .up(30).rotateX(deg(90))\
+            - cylinder(2.5,28,True).rotateY(deg(90)).moveY(-30)
+    return m
+def camera():
+    m = box ((54,18.6,1.1),center=True).moveX(14)\
+            - cylinder(2.5,1.1,True).moveX(-5.5)\
+            + box((8.5,8.5,6.5),center=True).down(3.75)
+    return m 
+def lokot_verh():
+    m = box((d_trub_vn,30,d_trub_vn),center=True).moveY(20)\
+            + cylinder(d_trub_vn,d_trub_vn,True).rotateY(deg(90))\
+            + cylinder(d_trub_vn/2,l_karetki,True).rotateY(deg(90))\
+            + sphere(d_trub_vn).translate(0.5*l_karetki,0,0)\
+            + sphere(d_trub_vn).translate(-0.5*l_karetki,0,0)
+    return m.moveY(-Rf)
+def lokot_niz():
+    m = sphere(d_trub)-sphere(d_trub_vn+0.2)
+    m = m ^ cube((0.75*d_trub,2*d_trub,2*d_trub),center=True)
+    m = m + cylinder(r_trubki_vn,30,True).moveZ(-15-d_trub)
+    #m = m.moveX(0.5*l_karetki) + m.moveX(-0.5*l_karetki)
+    return m#.moveY(-Rf)
+def arm():
+    m = cylinder(r_trubki,Re-2*d_trub,True).moveZ(-0.5*Re)\
+            + lokot_niz()\
+            + lokot_niz().rotateX(deg(180)).moveZ(-Re)
+    #m = m.moveX(0.5*l_karetki) + m.moveX(-0.5*l_karetki)
+    return m
+def karetka():
+    m = cylinder(d_trub_vn/2,l_karetki,True)\
+            .rotateY(deg(90)).moveY(-0.5*E)\
+            + sphere(d_trub_vn).translate(0.5*l_karetki,-0.5*E,0)\
+            + sphere(d_trub_vn).translate(-0.5*l_karetki,-0.5*E,0)\
+            + torus(r1=math.sqrt(3)*E/2, r2=d_trub_vn/2, yaw=deg(60))\
+            .rotateZ(deg(120)).translate(math.sqrt(3)*E/2,-0.5*E,0)
+    m= m + m.rotateZ(deg(120)) + m.rotateZ(deg(-120))
     return m
 
-def plecho_krep(teta):
-    m =  cylinder(0.5*d_trub+6,d_trub,center=True).up(32.5).rotateX(deg(90 + teta))\
-            ^ box (d_trub+6,center=True).up(32.5).rotateX(deg(90 + teta))
-    m =  m  + cylinder(6,28,True).rotateY(deg(90))\
-            + box((28,12,40),center=True).up(20).rotateX(deg(90 + teta))\
-            - cylinder(2.5,28,True).rotateY(deg(90))\
-            - cylinder(25,20.5,True).rotateY(deg(90))\
-            - box((d_trub+0.2,d_trub+0.2,d_trub+10),center=True)\
-            .up(30).rotateX(deg(90 + teta))
-    return m
 
 disp(square(200,center=True,wire=True),color.red)
 disp(ngon(2*rad,n=3,wire=True).rotateZ(pi/2),color.cian)
@@ -600,21 +621,20 @@ disp(basa(),color.blue)
 disp(krep_konch().moveZ(2.5).moveY(-rad),color.cian)
 disp(krep_konch_niz().translate(0,-rad+25,-35),color.cian)
 disp(skelet(),color.mech)
-disp(ploshadka(),color.green)
-#disp(tri_dvig(),color(0.3,0.3,0.3))
+disp(ploshadka().up(10),color.green)
+disp(camera().moveZ(10).rotateZ(deg(-30)),color.green)
+disp(tri_dvig(),color(0.3,0.3,0.3))
 
+disp(krepej().moveY(-rad),color(1,0.4,0))
 
-disp(krepej().moveY(-rad),color.green)
-
-
-disp(krepej().moveY(-rad).rotateZ(deg(120)),color.green)
+disp(krepej().moveY(-rad).rotateZ(deg(120)),color(1,0.4,0))
 #disp(worm(0).moveY(-rad).rotateZ(deg(120)),color.red)
 
-disp(krepej().moveY(-rad).rotateZ(deg(-120)),color.green)
+disp(krepej().moveY(-rad).rotateZ(deg(-120)),color(1,0.4,0))
 #disp(worm(0).moveY(-rad).rotateZ(deg(-120)),color.red)
 
-arduino.relocate(translate(0,rad,37.5) * rotateZ(pi))
-shild.relocate(translate(0,rad,50) * rotateZ(pi))
+arduino.relocate(translate(0,rad,47.5) * rotateZ(pi))
+shild.relocate(translate(0,rad,60) * rotateZ(pi))
 
 
 kon1 = kontsevic()
@@ -632,30 +652,152 @@ disp(kon2)
 disp(arduino)
 disp(shild)
 
-m=worm(1)
-#to_stl(m,'/home/oleg/Zencad/stl/worm.stl',0.01)
-to_stl(m,'C:/stl/worm.stl',0.01)
+m1=krepej()
+m2=basa()
+m3=plecho_krep()
+to_stl(m1,'/home/oleg/krepej.stl',0.01)
+to_stl(m2,'/home/oleg/basa.stl',0.01)
+to_stl(m3,'/home/oleg/plecho_krep.stl',0.01)
+#to_stl(m,'C:/stl/worm.stl',0.01)
 
-teta1 = -15
-worm   = disp(worm(teta1),color.red)
-gear3d = disp(gear3d(teta1))
-plecho = disp(plecho(teta1),color(0.8,0.8,0.8))
-plecho_krep = disp(plecho_krep(teta1),color(0,0,0.8))
+teta1 = 0
+worm1   = disp(worm(),color.red)
+worm2   = disp(worm(),color.red)
+worm3   = disp(worm(),color.red)
+gear3d1 = disp(gear3d())
+gear3d2 = disp(gear3d())
+gear3d3 = disp(gear3d())
+plecho1 = disp(plecho(),color(0.8,0.8,0.8))
+plecho2 = disp(plecho(),color(0.8,0.8,0.8))
+plecho3 = disp(plecho(),color(0.8,0.8,0.8))
+plecho_krep1 = disp(plecho_krep(),color(0,0,0.8))
+plecho_krep2 = disp(plecho_krep(),color(0,0,0.8))
+plecho_krep3 = disp(plecho_krep(),color(0,0,0.8))
+lokot_verh1 = disp(lokot_verh(),color.red)
+lokot_verh2 = disp(lokot_verh(),color.red)
+lokot_verh3 = disp(lokot_verh(),color.red)
 
+karetka = disp(karetka(),color.red)
+arm1p = disp(arm(),color.blue)
+arm1l = disp(arm(),color.blue)
+arm2p = disp(arm(),color.blue)
+arm2l = disp(arm(),color.blue)
+arm3p = disp(arm(),color.blue)
+arm3l = disp(arm(),color.blue)
+ngon = disp(ngon(E,n=3,wire=True).rotateZ(pi/2),color.cian)
 nulltime  = time.time()
+
 
 def animate(widget):
     t = (20*(time.time() - nulltime))%210
+#    t = 50
     if (t<105):
-        worm.relocate(translate(0,-rad+rich_x,19.5) * rotateZ(deg(-3*t)))
-        gear3d.relocate(moveY(-rad) * rotateX(deg(t)))
-        plecho.relocate(moveY(-rad) * rotateX(deg(t)))
-        plecho_krep.relocate(moveY(-rad) * rotateX(deg(t)))
+        teta1 = t-15
+        teta2 = t-15
+        teta3 = t-15
     else:
-        worm.relocate(translate(0,-rad+rich_x,19.5) * rotateZ(deg(-3*(210-t))))
-        gear3d.relocate(moveY(-rad) * rotateX(deg(210-t)))
-        plecho.relocate(moveY(-rad) * rotateX(deg(210-t)))
-        plecho_krep.relocate(moveY(-rad) * rotateX(deg(210-t)))
+        teta1 = 210-t-15
+        teta2 = 210-t-15
+        teta3 = 210-t-15
+       #========1 рука
+    worm1.relocate(translate(0,-rad+rich_x,19.5) * rotateZ(deg(-3*teta1 )))
+    gear3d1.relocate(moveY(-rad) * rotateX(deg(teta1)))
+    plecho1.relocate(moveY(-rad) * rotateX(deg(teta1)))
+    plecho_krep1.relocate(moveY(-rad) * rotateX(deg(teta1)))
+    lokot_verh1.relocate(moveY(-rad) * rotateX(deg(teta1)))
+        #========2 рука
+    worm2.relocate(translate(1.732*0.5*(rad-rich_x),0.5*(rad-rich_x),19.5)\
+            * rotateZ(deg(-3*teta2 + 120)))
+    gear3d2.relocate(translate(1.732*0.5*rad,0.5*rad,0)\
+            * rotateZ(deg(120)) * rotateX(deg(teta2)))
+    plecho2.relocate(translate(1.732*0.5*rad,0.5*rad,0)\
+            * rotateZ(deg(120)) * rotateX(deg(teta2)))
+    plecho_krep2.relocate(translate(1.732*0.5*rad,0.5*rad,0)\
+            * rotateZ(deg(120)) * rotateX(deg(teta2)))
+    lokot_verh2.relocate(translate(1.732*0.5*rad,0.5*rad,0)\
+            * rotateZ(deg(120)) * rotateX(deg(teta2)))
+        #========3 рука
+    worm3.relocate(translate(-1.732*0.5*(rad-rich_x),0.5*(rad-rich_x),19.5)\
+            * rotateZ(deg(-3*teta3 - 120)))
+    gear3d3.relocate(translate(-1.732*0.5*rad,0.5*rad,0)\
+            * rotateZ(deg(-120)) * rotateX(deg(teta3)))
+    plecho3.relocate(translate(-1.732*0.5*rad,0.5*rad,0)\
+            * rotateZ(deg(-120)) * rotateX(deg(teta3)))
+    plecho_krep3.relocate(translate(-1.732*0.5*rad,0.5*rad,0)\
+            * rotateZ(deg(-120)) * rotateX(deg(teta3)))
+    lokot_verh3.relocate(translate(-1.732*0.5*rad,0.5*rad,0)\
+            * rotateZ(deg(-120)) * rotateX(deg(teta3)))
+    # радиусы описаной окружности базы и каретки
+    t = rad - 0.5*E  # радиус вписанной окружности
+
+    x1 = 0
+    y1 = -(t + Rf*math.cos( deg(teta1) ))
+    z1 = -Rf*math.sin( deg(teta1) )
+
+    y2 = (t + Rf*math.cos( deg(teta2) ))*math.sin(pi/6)
+    x2 = y2*math.tan(pi/3)
+    z2 = -Rf*math.sin( deg(teta2) )
+
+
+    y3 = (t + Rf*math.cos( deg(teta3) ))*math.sin(pi/6)
+    x3 = -y3*math.tan(pi/3)
+    z3 = -Rf*math.sin( deg(teta3) )
+
+    dnm = (y2-y1)*x3-(y3-y1)*x2
+
+    w1 = y1**2 + z1**2
+    w2 = x2**2 + y2**2 + z2**2
+    w3 = x3**2 + y3**2 + z3**2
+
+    a1 = (z2-z1)*(y3-y1)-(z3-z1)*(y2-y1)
+    b1 = -((w2-w1)*(y3-y1)-(w3-w1)*(y2-y1))/2
+
+    a2 = -(z2-z1)*x3+(z3-z1)*x2
+    b2 = ((w2-w1)*x3 - (w3-w1)*x2)/2
+
+    a = a1**2 + a2*a2 + dnm**2
+    b = 2*(a1*b1 + a2*(b2-y1*dnm) - z1*dnm**2)
+    c = (b2-y1*dnm)*(b2-y1*dnm) + b1**2 + dnm**2*(z1**2 - Re**2)
+
+    d = b**2 - 4*a*c
+    print(d)
+    Z = -0.5*(b + math.sqrt(d))/a
+    Y = (a1*Z + b1)/dnm
+    X = (a2*Z + b2)/dnm
+
+
+
+    karetka.relocate(translate(X,Y,Z))
+    ngon.relocate(translate(X,Y,Z))
+
+    arm1p.relocate(translate(x1+0.5*l_karetki,y1-0.5*E,z1)\
+            * rotateY(-math.asin( (X-x1)/Re ) )\
+            * rotateX(math.asin( (Y-y1)/Re ) ))
+    arm1l.relocate(translate(x1-0.5*l_karetki,y1-0.5*E,z1)\
+            * rotateY(-math.asin( (X-x1)/Re ) )\
+            * rotateX(math.asin( (Y-y1)/Re ) ))
+
+    arm2p.relocate(translate(x2+0.433*E+0.25*l_karetki\
+            ,y2+0.25*E-0.433*l_karetki,z2) \
+            * rotateZ(deg(120))\
+            * rotateX(math.asin( (Y+0.866*x2+0.5*y2)/Re ) )\
+            * rotateY(math.asin( (X+0.5*x2-0.866*y2)/Re ) ))
+    arm2l.relocate(translate(x2+0.433*E-0.25*l_karetki\
+            ,y2+0.25*E+0.433*l_karetki,z2) \
+            * rotateZ(deg(120))\
+            * rotateX(math.asin( (Y+0.866*x2+0.5*y2)/Re ) )\
+            * rotateY(math.asin( (X+0.5*x2-0.866*y2)/Re ) ))
+
+    arm3p.relocate(translate(x3-0.433*E+0.25*l_karetki\
+            ,y3+0.25*E+0.433*l_karetki,z3) \
+            * rotateZ(deg(-120))\
+            * rotateX(math.asin( (Y-0.866*x3+0.5*y3)/Re ) )\
+            * rotateY(math.asin( (X+0.5*x3+0.866*y3)/Re ) ))
+    arm3l.relocate(translate(x3-0.433*E-0.25*l_karetki\
+            ,y3+0.25*E-0.433*l_karetki,z3) \
+            * rotateZ(deg(-120))\
+            * rotateX(math.asin( (Y-0.866*x3+0.5*y3)/Re ) )\
+            * rotateY(math.asin( (X+0.5*x3+0.866*y3)/Re ) ))
 
 show(animate=animate)
 
