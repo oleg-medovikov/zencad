@@ -7,13 +7,13 @@ y_max = 1000
 
 array = np.zeros([x_max,y_max,3],dtype=np.uint8)
 array.fill(255)
-array[int(0.5*x_max),:] = 0
-array[:,int(0.5*y_max)] = 0
+#array[int(0.5*x_max),:] = 0
+#array[:,int(0.5*y_max)] = 0
 
 
 
 def add_point(x,y,color):
-    array[int(2*y + 0.5*y_max) , int(2*x + 0.5*x_max) ] = color
+    array[int(3*y + 0.5*y_max) , int(3*x + 0.5*x_max) ] = color
     
 def circle(d, color):
     for a in range(360):
@@ -29,8 +29,8 @@ def gear_profile(m, z):
     h   = 2.25*m        # Высота зуба
     ha  = m             # Высота головки
     hf  = 1.25*m        # Высота ножки
-    da  = d + 2*ha      # Диаметр вершин зубьев            r_zub
-    df  = d - 2*hf      # Диаметр впадин зубчатого колеса  r
+    da  = d + 2*ha      # Диаметр вершин зубьев           
+    df  = d - 2*hf      # Диаметр впадин зубчатого колеса  
     db  = d*cos(pi/9)   # Диаметр основной окружности
     b   = 8*m           # Ширина венца зубчатого колеса
     Pt  = pi*m          # Окружной шаг зубьев
@@ -62,7 +62,7 @@ def gear_profile(m, z):
                 break
                         
         d_a = arctan(-y/x)       # угол который занимает эвольвента
-        d_b = 0.5*teta - d_a     # угол который занимает впадина или верхушка зуба
+        d_b = 0.5*teta - d_a     # угол который занимает впадина или зуб
         a_max = a                # максимальный угол эвольвенты
         a = 0 
         while True:
@@ -73,7 +73,7 @@ def gear_profile(m, z):
             X =  x*cos(turn) + y*sin(turn)
             Y = -x*sin(turn) + y*cos(turn)
             a -= pi/180
-            if a >= -0.5*d_b:
+            if a > -0.5*d_b*(d/da):
                 add_point(X,Y,0)
             else:
                 break
@@ -138,7 +138,7 @@ def gear_profile(m, z):
             else:
                 break  
     
-gear_profile(16,12)
+gear_profile(16,6)
 
 img = Image.fromarray(array)
 img.save('test.png')
