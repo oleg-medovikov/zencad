@@ -118,7 +118,7 @@ def gear_profile(modul, number):
 	return polysegment(list_, closed=True)
 
 
-m = gear_profile(8,42).fill().extrude(30)
+m = gear_profile(30,6).fill().extrude(30)
 
 disp(m)
 
